@@ -106,7 +106,7 @@ def predict_classification():
     result = 'Седан' if predictions >= 0.5 else 'Внедорожник'
     print(result)
     # меняем кодировку
-    app.config['JSON_AS_ASCII'] = False
+    app.config['JSON_AS_ASCIIT'] = False
     return jsonify(kuzov = str(result))
 
 if __name__ == "__main__":
