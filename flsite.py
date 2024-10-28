@@ -1,8 +1,10 @@
 import pickle
-
+from tensorflow import keras
+from tensorflow.keras.preprocessing import image
+import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
-from flask import Flask, render_template, url_for, request, jsonify
+from flask import Flask, render_template, url_for, request, jsonify, render_template
 from model.neuron import SingleNeuron
 
 app = Flask(__name__)
@@ -10,14 +12,18 @@ app = Flask(__name__)
 menu = [{"name": "Лаба 1", "url": "p_knn"},
         {"name": "Лаба 2", "url": "p_lab2"},
         {"name": "Лаба 3", "url": "p_lab3"},
-        {"name": "Лаба 4", "url": "p_lab4"}]
+        {"name": "Лаба 4", "url": "p_lab4"},
+        {"name": "Лаба 18", "url": "p_lab18"},]
 
+class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
+               'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
 
 # Загрузка весов из файла
 new_neuron = SingleNeuron(input_size=2)
 new_neuron.load_weights('model/neuron_weights.txt')
 model_reg = tf.keras.models.load_model('model/regression_model.h5')
 model_class = tf.keras.models.load_model('model/classification_model.h5')
+model_cloth = tf.keras.models.load_model('model/model_cloth.h5')
 
 @app.route("/")
 def index():
@@ -57,6 +63,29 @@ def p_lab4():
         print("Предсказанные значения:", predictions, *np.where(predictions >= 0.5, 'Помидор', 'Огурец'))
         return render_template('lab4.html', title="Первый нейрон", menu=menu,
                                class_model="Это: " + str(*np.where(predictions >= 0.5, 'Помидор', 'Огурец')))
+
+
+@app.route("/p_lab18", methods=['POST', 'GET'])
+def p_lab18():
+    if request.method == 'GET':
+        return render_template('lab18.html', title="Определение одежды", menu='', class_model='')
+
+    if request.method == 'POST':
+        # Get the uploaded image
+        img_file = request.files['image']
+        img_path = img_file.filename
+        img_file.save(img_path)
+
+        # Load and preprocess the image
+        img = image.load_img(img_path, target_size=(28, 28), color_mode='grayscale')
+        img = image.img_to_array(img) / 255.0
+        img = np.expand_dims(img, axis=0)
+
+        # Make predictions
+        predictions = model_cloth.predict(img)
+        predicted_class = class_names[np.argmax(predictions)]
+
+        return render_template('lab18.html', title="Определение одежды", menu='', class_model="Это: " + predicted_class)
 
 @app.route('/api', methods=['get'])
 def get_sort():

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{{ super() }}
+<p>Нейрон для классификации одежды
+    <form action="/p_lab18" method="POST" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*" required>
+        <button type="submit">Определить</button>
+    </form>
+    {% if class_model %}
+        <h2>{{ class_model }}</h2>
+    {% endif %}
+
+{% endblock %}
